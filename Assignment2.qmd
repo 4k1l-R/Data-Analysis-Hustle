@@ -1,0 +1,428 @@
+---
+title: "assignment2"
+format: html
+editor: visual
+mainfont: 'Times New Roman'
+---
+
+#### Question 1.
+
+##### 1.
+
+```{r}
+# open csv file
+library(dplyr)
+cr <- read.csv("covid.recovery.2025.csv")
+
+# find the mean 
+mean1 <- mean(cr$Recovery.Time)
+
+print(paste("The average recovery (in days) is:", round(mean1, digits = 3)))
+
+## calculating the 95% confidence interval (using mean)
+# First find Standard Deviation and standard error
+sd1 <- sd(cr$Recovery.Time)
+var1 <- sd1**2
+n1 <- 1500
+se1 <- sd1/sqrt(n1)
+
+```
+
+**Method**
+
+::: {style="text-align:center"}
+Sample Size: n~1~ = 1500\
+Sample Mean: $\bar{x}$ ~1~= 14.215\
+Sample Standard deviation: $\sigma$ ~1~= 6.594\
+Sample Variance: V~1~ = 43.484\
+Sample Standard Error (SE~1~): $\frac{\sigma}{\sqrt(n)}$ = $\frac{6.594}{\sqrt(1500)}$ $\approx$ 0.170\
+T-crit value: t~0.05~ = 1.962
+:::
+
+```{r}
+alpha <- 0.05 
+quantile <- qt(1-alpha/2, df = n1 -1)
+
+#calculate margin of error by multiplying quantile and standard error
+moe <- quantile*se1
+upper_bound <- mean1 + moe
+lower_bound <- mean1 - moe
+
+#print results
+print(paste("Lower Bound:", round(lower_bound, digits = 3)))
+print(paste("Upper Bound:", round(upper_bound, digits = 3)))
+```
+
+\
+**Confidence interval:**
+
+::: {style="text-align:center"}
+CI = 14.215 $\pm$ (0.170 x 1.962)\
+= (13.881, 14.549)
+:::
+
+\
+The estimated average recovery time is about 14.215 days, with a 95% confidence interval from 13.881 to 14.549 days. The recovery sits very close to two weeks, and the margin of error is small (about 0.33 days), which reflects strong precision from a large sample. This interval means that if we repeated the study many times and built a new interval each time, about 95 out of 100 such intervals would cover the true average recovery time. This interpretation further assumes the observations are independent and there are no extreme outliers distorting the mean.
+
+##### 2.
+
+```{r}
+# opening new csv file
+ica <- read.csv("israeli.covid.19.ass2.csv")
+```
+
+```{r}
+mean2 <- mean(ica$Recovery.Time, na.rm = TRUE)
+sd2 <- sd(ica$Recovery.Time)
+var2 <- sd2**2
+n2 <- 494
+```
+
+\
+**Method:\
+**
+
+::: {style="text-align:center"}
+Sample size: n~2~ = 494\
+Sample mean: $\bar{x}$ ~2~ = 14.650\
+Sample Standard Deviation: $\sigma$ ~2~ = 5.52\
+Sample variance: V~2~ = 30.475
+:::
+
+```{r}
+diff <- mean1 - mean2
+print(paste("The mean difference in recovery times is:", round(diff, digits = 3)))
+```
+
+\
+**Difference in means between NSW and Israel:\
+**
+
+::: {style="text-align:center"}
+$\hat{\triangle}$ = $\bar{x}$ ~1~ - $\bar{x}$ ~2~ = - 0.435 days
+:::
+
+```{r}
+zval <- qnorm(0.975)
+zval
+
+se2 <- sqrt((var1/n1)+(var2/n2))
+se2
+```
+
+\
+**\
+Standard Error for both NSW and Israel recovery (SE~2~):\
+**
+
+::: {style="text-align:center"}
+$\sqrt{\frac{\sigma_1^2}{n_1} + \frac{\sigma_2^2}{n_2}}$ = $\sqrt{\frac{43.48}{1500} + \frac{30.48}{494}}$ $\approx$ 0.301
+:::
+
+**Z-score:**
+
+::: {style="text-align:center"}
+Z~a/2~ = Z~0.025~ $\approx$ 1.960
+:::
+
+```{r}
+
+lowerbound2 <- -diff - (zval*se2) #diff is -ve as the initial value of difference is a negative
+upperbound2 <- -diff + (zval*se2)
+print(paste("Lower Bound:", round(lowerbound2, digits = 3)))
+print(paste("Upper Bound:", round(upperbound2, digits = 3)))
+```
+
+\
+**Calculate Difference for normal means between NSW and Israel patients:**
+
+::: {style="text-align:center"}
+CI = -(0.435 $\pm$ ( 0.301x 1.958)\
+= (-0.155, 1.025)
+:::
+
+The 95 percent confidence interval for the difference in mean recovery time (Israel minus NSW) is −0.155 to 1.025 days. Because this range includes zero, the data do not show a clear difference in average recovery time between the sets. Additionally, the unequal sample sizes matter: NSW has n = 1500, whereas Israel has n = 494. With similar standard deviations, the smaller Israel sample contributes most of the uncertainty, widening the interval and reducing sensitivity to small differences. Practically, the true difference could be slightly in favor of NSW or up to about one extra day for Israel. A larger Israel sample would narrow the interval and strengthen the test.
+
+##### 3.
+
+```{r}
+zscore <- diff/se2
+zscore
+
+p_val <- 2 * pnorm(-abs(zscore))  
+p_val
+```
+
+::: {style="text-align:center"}
+Let $\mu_1$ = Israeli Population Mean\
+Let $\mu_2$ = NSW Population Mean
+
+Null: H~0~ : $\mu_1$ = $\mu_2$\
+Alt: H~1~ : $\mu_1$ $\neq$ $\mu_2$
+
+Using results of the mean values $\bar{x_1}$ (NSW mean) and $\bar{x_2}$ (Israel mean) to find z-score:\
+$Z_{\bar{x_1} - \bar{x_2}}$ = Z~0.435~ = $\frac{-0.435}{\text{se. difference between Israel and NSW}}$ $\approx$ -1.445
+
+\
+Derive the p-value using Z-score:\
+\
+p = 2P(Z \< -\|$Z_{\bar{x_1} - \bar{x_2}}$\|)\
+= 2P(Z \< -1.445)\
+= 0.148
+:::
+
+Since p value is greater than $\alpha$ = 0.05, this means that there is insufficient evidence to support the alternative hypothesis, where the population average time taken to recover for the Israeli cohort is not necessarily the same as the NSW cohort. Hence, the alt hypothesis is rejected and null is kept. Therefore, the original statement that the population average time taken between Israel and NSW being the same is true.
+
+#### Question 2
+
+##### 1.
+
+```{r}
+library(ggplot2)
+erlang_pdf <- function(y, v, k) {
+  (y^(k-1) / factorial(k-1)) * exp(-exp(-v)*y - k*v)
+}
+
+# grid of y values
+y <- seq(0, 15, by = 0.01)
+
+# data for k = 1 and k = 2, v = 0
+df <- data.frame(
+  y   = y,
+  k1  = erlang_pdf(y, v = 0, k = 1),
+  k2  = erlang_pdf(y, v = 0, k = 2)
+)
+
+df_long <- rbind(
+  data.frame(y = df$y, density = df$k1, curve = "v = 0, k = 1"),
+  data.frame(y = df$y, density = df$k2, curve = "v = 0, k = 2")
+)
+
+# plot
+ggplot(df_long, aes(x = y, y = density, color = curve)) +
+  geom_line(linewidth = 1) +
+  coord_cartesian(xlim = c(0, 15)) +
+  labs(
+    title   = "Erlang Probability Density Function (v = 0)",
+    x       = "y",
+    y       = "p(y | v, k)",
+    color   = "Parameters"
+  )
+```
+
+##### 2-5
+
+![](images/clipboard-859602929.jpeg)
+
+![](images/clipboard-874379033.jpeg)
+
+![](images/clipboard-3641939957.jpeg)
+
+#### Question 3
+
+##### 1.
+
+```{r}
+# Find Point Estimate:
+x <- 54
+n <- 62
+p_hat <- x/n
+p_hat
+```
+
+**Find probability estimate:\
+**
+
+::: {style="text-align:center"}
+$\hat{p}$ = probability of success\
+$\hat{p}$ = $\frac{x}{n}$
+
+= 0.871
+:::
+
+```{r}
+zval <- qnorm(0.975)
+zval
+```
+
+**Find z-score:**
+
+::: {style="text-align:center"}
+Z~0.975~ = 1.960
+:::
+
+Now that $\hat{p}$ and Z~0.975~ are found\
+\
+Use this equation to find the confidence intervals:
+
+```{r}
+lowerb3 <- p_hat - zval * sqrt( (p_hat * (1 - p_hat)) / n )
+upperb3 <- p_hat + zval * sqrt( (p_hat * (1 - p_hat)) / n )
+
+print(paste("Lower Bound:", lowerb3))
+print(paste("Upper Bound:", upperb3))
+```
+
+::: {style="text-align:center"}
+$\hat{p}$ $\pm$ Z~0.975~ $\sqrt{\frac{\hat{p}(1-\hat{p})}{n}}$
+
+0.871 $\pm$ 1.96 $\sqrt{\frac{(0.871)(0.129)}{62}}$\
+= 0.871 $\pm$ 1.96 $\sqrt{\frac{0.112}{62}}$\
+= 0.871 $\pm$ 0.0834\
+= (0.79, 0.95)
+:::
+
+**Therefore the 95% Confidence interval is (0.79,0.95)**
+
+From 54 successes in 62 pours, the estimated probability of construction grade concrete is 0.87. A 95% confidence interval of 0.79 to 0.95 shows meaningful uncertainty around this estimate. Because 0.90 lies inside the interval, the data is consistent with the company’s claim, even though the point estimate is slightly below 0.90. Furthermore, the lower bound indicates the true rate could be closer to 0.80, while the upper bound allows for a rate up to 0.95. Overall, this sample does not provide strong evidence against the claim.
+
+##### 2.
+
+**Method:\
+**
+
+::: {style="text-align:center"}
+Null: H~0~: $\theta$ $\geq$ 0.9\
+Alt: H~1~: $\theta$ \< 0.9
+:::
+
+In order to find p-value, we must approximate z:\
+\
+
+```{r}
+# Use the x, n and p_hat values again
+p90 <- 0.9
+
+# Calculate stadnard error:
+se3 <- sqrt(p90*(1-p90)/n)
+
+newz <- (p_hat - p90)/se3
+```
+
+**Find standard error:**
+
+::: {style="text-align:center"}
+Standard Error: SE = $\sqrt{\frac{\theta_0(1-\theta_0)}{n}}$\
+= $\sqrt{\frac{0.9(1-0.9)}{62}}$\
+= $\sqrt{\frac{0.09}{62}}$\
+= 0.038
+:::
+
+**Use Standard Error to find z:**
+
+::: {style="text-align:center"}
+z = $\frac{\hat{p}-\theta_0}{SE}$\
+= $\frac{0.871 - 0.9}{0.0381}$\
+= -0.762 //
+:::
+
+**Find p:**
+
+```{r}
+pleft <- pnorm(newz)
+pleft
+```
+
+::: {style="text-align:center"}
+p = P(Z\<-0.762)
+
+= 0.223
+:::
+
+A p-value of about 0.22 means that, if the true proportion were 0.90, an outcome as low as 54 successes in 62 trials would arise fairly often by chance (around one time in five). However, since the p-value is larger than 0.05, this sample does not give a strong reason to conclude the rate is below 0.90. Moreover, the point estimate is 0.87 and a 95% interval of roughly 0.79 to 0.95 still covers 0.90, so the shortfall you observe could reflect sampling fluctuation rather than a real deficit. Finally, because the standard error under 0.90 is about 0.038 with n = 62, the study has limited power to detect small departures from 0.90; a larger sample would be needed to make a firmer call.
+
+##### 3.
+
+```{r}
+exactp <- binom.test(x = 54, n = 62, p = 0.90, alternative = "less")
+
+exactp
+```
+
+**Answer from binom test** $\approx$ **0.278**
+
+Both tests point the same way. The approximate z test gave a p-value of about 0.223 and the exact binomial test gave about 0.278. Under the claim that the true rate is 0.90, results as low as 54 out of 62 would occur this often purely by chance, which is not rare. Hence, the sample does not provide a strong basis to conclude the rate is below 0.90. The point estimate is 0.87 and a 95% interval of about 0.79 to 0.95 still includes 0.90, so the observed shortfall may be ordinary sampling fluctuation. If you want to rule out values near 0.90 more decisively, you would need a larger sample or a larger observed gap from 0.90.
+
+##### 4.
+
+```{r}
+# Open new csv
+concrete <- read.csv("concrete.2025.csv")
+head(concrete)
+```
+
+```{r}
+library(ggplot2)
+
+concrete <- concrete[order(concrete$month), ]
+
+m      <- nrow(concrete)
+months <- concrete$month
+cs_n   <- cumsum(concrete$n)
+cs_h   <- cumsum(concrete$h)
+tot_n  <- sum(concrete$n)
+tot_h  <- sum(concrete$h)
+
+# Run prop.test at each cut
+pvals <- numeric(m - 1); bp <- numeric(m - 1); ap <- numeric(m - 1)
+for (i in 1:(m - 1)) {
+  n_b <- cs_n[i]; h_b <- cs_h[i]
+  n_a <- tot_n - n_b; h_a <- tot_h - h_b
+  bp[i] <- h_b / n_b; ap[i] <- h_a / n_a
+  pvals[i] <- prop.test(c(h_b, h_a), c(n_b, n_a), correct = FALSE)$p.value
+}
+
+# Results data frame for plotting
+res <- data.frame(
+  cut_after_month = months[1:(m - 1)],
+  before_p = bp, after_p = ap,
+  p_value = pvals,
+  neglogp = -log(pvals)
+)
+
+# Plot with ggplot2
+ggplot(res, aes(cut_after_month, neglogp)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Cut after month", y = "-log(p-value)",
+       title = "Before vs After (prop.test) at each cut") +
+  theme_minimal()
+```
+
+```{r}
+# Run prop.test at each cut (before vs after)
+cuts    <- 1:(m-1)
+pvals   <- numeric(length(cuts))
+bp      <- numeric(length(cuts))  # before proportion
+ap      <- numeric(length(cuts))  # after proportion
+
+for (j in seq_along(cuts)) {
+  i <- cuts[j]
+  n_before <- cs_n[i]; h_before <- cs_h[i]
+  n_after  <- tot_n - n_before; h_after <- tot_h - h_before
+  
+  bp[j] <- h_before / n_before
+  ap[j] <- h_after  / n_after
+  
+  pvals[j] <- prop.test(c(h_before, h_after),
+                        c(n_before, n_after),
+                        alternative = "two.sided",
+                        correct = FALSE)$p.value
+}
+
+# Smallest p-value and its details
+k <- which.min(pvals)
+
+best <- data.frame(
+  cut_after_month = concrete$month[k],
+  before_p = bp[k],
+  after_p  = ap[k],
+  p_value  = pvals[k]
+)
+
+best
+```
+
+**Small report:**
+
+When I scan every possible split with prop.test(), I see a clear trough in the p value when I cut after month 28. At that point, the construction grade rate falls from about 0.846 before month 28 (697 of 824 pours) to about 0.763 after month 28 (466 of 611 pours), which is a drop of roughly 8 percentage points. The test at this split gives a very small p value of about 7×10⁻⁵, and my plot of negative log p values shows a sharp peak at month 28 compared with nearby months. To me, that pattern suggests a discrete change rather than a slow drift. I also ran an omnibus test across all months and got a p value near 0.41, which makes sense because it averages stable periods together with the lower post change period and dilutes the signal. Taken together, I conclude that the quality level changed around month 28, with a meaningful reduction in the share of pours that reached the construction grade threshold after that time. As next steps, I would confirm with a focused pre versus post test around month 28, check operational records for that period, and keep monitoring later months to see if the lower rate persists or improves.

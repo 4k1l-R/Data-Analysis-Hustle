@@ -21,7 +21,6 @@ The primary objective of this analysis is to model and compare recovery trends a
 *   `index.html`: The fully rendered, recruiter-ready report.
 *   `covid.recovery.2025.csv`: Primary dataset for recovery time estimation.
 *   `israeli.covid.19.ass2.csv`: Comparative dataset for hypothesis testing.
-*   `.gitignore`: Configured to exclude local R environment clutter.
 
 ## 📈 Key Insights
 *   Calculated a sample mean recovery time of **14.215 days** from a sample size of $n=1500$.
